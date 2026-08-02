@@ -1,1 +1,5 @@
 .env
+clothes.json
+wardrobe/
+wardrobe_images/
+__pycache__/
