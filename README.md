@@ -1,14 +1,16 @@
 # Drobe — AI-Powered Wardrobe Manager
 
-Drobe is a desktop app that helps you manage your wardrobe and plan outfits using AI. Add your clothes with photos, track how many times you've worn each item before it needs a wash, and describe a vibe or event to get a personalised outfit suggestion powered by Google Gemini — all from your own machine.
+Drobe is a desktop app that helps you manage your wardrobe and plan outfits using AI. Add your clothes with photos, track how many times you've worn each item before it needs a wash, mark items as clean after washing, and describe a vibe or event to get a personalised outfit suggestion powered by Google Gemini — all from your own machine.
 
 ---
 
 ## Features
 
 - 👕 **Wardrobe Catalog** — Add clothes with photos and descriptions, stored locally
-- 🧺 **Laundry Tracker** — Log wears and automatically mark items as unavailable when they need washing
-- ✨ **AI Outfit Suggestions** — Describe a vibe ("smart casual coffee date") and Gemini suggests an outfit from your actual available clothes
+- 🧺 **Laundry Tracker** — Log wears and automatically mark items as unavailable when they hit their wear limit
+- 🫧 **Laundry Bag** — View all items that need washing and mark them clean to return them to your wardrobe
+- 📅 **Outfit History** — Every wear is logged with a date, grouped by day so you can see exactly what you wore when
+- ✨ **AI Outfit Suggestions** — Describe a vibe ("smart casual coffee date") and Gemini suggests an outfit using only your currently available clothes
 - 🗑️ **Remove Items** — Clean up your wardrobe as needed
 
 ---
@@ -43,11 +45,12 @@ python app.py
 ## Project Structure
 
 ```
-├── app.py        # Desktop UI (CustomTkinter)
-├── main.py       # Backend logic and Gemini integration
-├── .env          # Your API key (not committed)
-├── clothes.json  # Auto-generated wardrobe data
-└── wardrobe/     # Auto-generated folder for clothing images
+├── app.py          # Desktop UI (CustomTkinter)
+├── main.py         # Backend logic and Gemini integration
+├── .env            # Your API key (not committed)
+├── clothes.json    # Auto-generated wardrobe data
+├── history.json    # Auto-generated wear history
+└── wardrobe/       # Auto-generated folder for clothing images
 ```
 
 ---
