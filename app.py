@@ -10,7 +10,7 @@ from tkinterweb import HtmlFrame
 # ── Backend ──────────────────────────────────────────────────────────────────
 from main import (
     clothes, save_clothes, Clothing,
-    search_clothes, add_cloth, update_wear, delete_cloth, get_outfit_prompt
+    search_clothes, add_cloth, update_wear, delete_cloth, get_outfit_prompt,mark_clean
 )
 
 # ── Theme ─────────────────────────────────────────────────────────────────────
@@ -47,7 +47,7 @@ class DrobeApp(ctk.CTk):
         self.geometry("1100x700")
         self.configure(fg_color=BG)
         self.selected_image_path = None
-
+        self._last_outfit = None
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
@@ -270,18 +270,18 @@ class DrobeApp(ctk.CTk):
         self._log_msg = ctk.CTkLabel(self.main, text="", text_color=SUCCESS, font=ctk.CTkFont(size=14))
         self._log_msg.grid(row=2, column=0, pady=8)
 
-        self._render_log_cards(clothes)
+        self._render_log_cards([c for c in clothes if c["available"]])
 
     def _run_search(self):
         query = self._search_var.get().strip().lower()
         if not query:
-            self._render_log_cards(clothes)
+            self._render_log_cards([c for c in clothes if c["available"]])
             return
         keywords = query.split()
         hits     = search_clothes(clothes, keywords)
         hit_ids  = {h[0] for h in hits}
         filtered = [c for c in clothes if c["cloth_id"] in hit_ids]
-        self._render_log_cards(filtered)
+        self._render_log_cards([c for c in filtered if c["available"]])
 
     def _render_log_cards(self, items):
         for w in self._log_scroll.winfo_children():
@@ -301,13 +301,12 @@ class DrobeApp(ctk.CTk):
 
             ctk.CTkLabel(card, text=cloth["desc"].title(), font=ctk.CTkFont(weight="bold"), text_color=TEXT).pack(pady=4)
 
-            if cloth["available"]:
-                ctk.CTkButton(
-                    card, text="I Wore This", fg_color=ACCENT,
-                    command=lambda cid=cloth["cloth_id"]: self._log_wear(cid)
-                ).pack(pady=(0, 14), padx=14)
-            else:
-                ctk.CTkLabel(card, text="Needs Wash", text_color=DANGER).pack(pady=(0, 14))
+        
+            ctk.CTkButton(
+                card, text="I Wore This", fg_color=ACCENT,
+                command=lambda cid=cloth["cloth_id"]: self._log_wear(cid)
+            ).pack(pady=(0, 14), padx=14)
+        
 
     def _log_wear(self, cloth_id):
         msg = update_wear(clothes, cloth_id)
@@ -338,10 +337,12 @@ class DrobeApp(ctk.CTk):
             command=self._fetch_outfit
         )
         self._outfit_btn.grid(row=3, column=0, sticky="w", pady=(0, 20))
-
         self._outfit_box = HtmlFrame(self.main, width=700, height=340)
         self._outfit_box.grid(row=4, column=0, sticky="w")
-        self._outfit_box.load_html("<p style='color:gray'>Your suggestion will appear here...</p>")
+        if self._last_outfit:
+            self._outfit_box.load_html(markdown.markdown(self._last_outfit))
+        else:
+            self._outfit_box.load_html("<p style='color:gray'>Your suggestion will appear here...</p>")
 
     def _fetch_outfit(self):
         vibe = self._vibe_entry.get().strip()
@@ -364,6 +365,7 @@ class DrobeApp(ctk.CTk):
 
     def _write_outfit(self, text):
         html = markdown.markdown(text)
+        self._last_outfit = text
         self._outfit_box.load_html(html)
 
 

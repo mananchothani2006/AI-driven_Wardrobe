@@ -5,6 +5,7 @@ import os
 from operator import itemgetter
 from dotenv import load_dotenv
 from google import genai
+import datetime
 
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
@@ -32,6 +33,14 @@ class Clothing:
 def save_clothes(clothes):
     pathlib.Path('clothes.json').write_text(json.dumps(clothes))
 
+def mark_clean(clothes, cloth_id):
+    """Reset wear count and mark item as available again."""
+    for cloth in clothes:
+        if cloth["cloth_id"] == cloth_id:
+            cloth["wear_count"] = 0
+            cloth["available"] = True
+            break
+    save_clothes(clothes)
 
 def add_cloth(clothes, image_src_path, desc, max_wears=1, wardrobe_dir="wardrobe"):
     """Add a single clothing item. Copies image, creates Clothing object, saves."""
@@ -55,6 +64,21 @@ def add_cloth(clothes, image_src_path, desc, max_wears=1, wardrobe_dir="wardrobe
     save_clothes(clothes)
     return cloth
 
+def log_to_history(cloth):
+    history_file = pathlib.Path('history.json')
+    if history_file.exists():
+        history = json.loads(history_file.read_text())
+    else:
+        history = []
+    
+    entry = {
+        "cloth_id": cloth["cloth_id"],
+        "desc": cloth["desc"],
+        "date": datetime.date.today().strftime("%d %b %Y")
+    }
+    history.append(entry)
+    history_file.write_text(json.dumps(history))
+
 
 def search_clothes(clothes, keywords):
     """Returns sorted list of (cloth_id, score, desc) tuples. No printing."""
@@ -71,6 +95,7 @@ def update_wear(clothes, cloth_id):
     for cloth in clothes:
         if cloth["cloth_id"] == cloth_id:
             cloth["wear_count"] += 1
+            log_to_history(cloth)
             if cloth["wear_count"] >= cloth["max_wears"]:
                 cloth["available"] = False
                 msg = f"'{cloth['desc']}' marked as needs wash."
